@@ -5,5 +5,5 @@ variable "azure_location" {
 
 variable "resource_group_name" {
   description = "Nom du Resource Group Azure"
-  default     = "demo-rg"
+  default     = "demo"
 }
