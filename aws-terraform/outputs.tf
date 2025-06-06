@@ -1,6 +1,6 @@
-# ────────────────────────────────────────────────────────────────────────────
-# Outputs pour la stack AWS (à exposer vers la stack Azure)
-# ────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
+//        outputs.tf
+// ────────────────────────────────────────────────────────────────────────────
 
 output "aws_vpc_id" {
   description = "ID du VPC principal"
@@ -36,10 +36,6 @@ output "web2_private_ip" {
   description = "IP privée de la deuxième instance web"
   value       = aws_instance.web2.private_ip
 }
-
-# ────────────────────────────────────────────────────────────────────────────
-# Outputs spécifiques au VPN AWS
-# ────────────────────────────────────────────────────────────────────────────
 
 output "aws_customer_gateway_id" {
   description = "ID du Customer Gateway (pointant vers Azure)"

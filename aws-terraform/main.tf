@@ -1,3 +1,7 @@
+// ────────────────────────────────────────────────────────────────────────────
+//        main.tf
+// ────────────────────────────────────────────────────────────────────────────
+
 #####################
 # Terraform & Providers
 #####################
@@ -122,7 +126,7 @@ resource "aws_security_group" "webservers_sg" {
 ###################################################
 
 resource "aws_instance" "web1" {
-  ami                         = "ami-0779caf41f9ba54f0" # Amazon Linux 2, par exemple
+  ami                         = "ami-0779caf41f9ba54f0" # Amazon Linux 2
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.private.id
   vpc_security_group_ids      = [aws_security_group.webservers_sg.id]
@@ -198,6 +202,5 @@ resource "aws_vpn_connection_route" "to_azure" {
 resource "aws_route" "to_azure_vpn" {
   route_table_id         = aws_route_table.private.id
   destination_cidr_block = var.azure_cidr
-  vpn_gateway_id         = aws_vpn_gateway.vgw.id
+  gateway_id             = aws_vpn_gateway.vgw.id
 }
-
