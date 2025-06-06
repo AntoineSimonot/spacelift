@@ -200,3 +200,4 @@ resource "aws_route" "to_azure_vpn" {
   destination_cidr_block = var.azure_cidr
   vpn_gateway_id         = aws_vpn_gateway.vgw.id
 }
+
