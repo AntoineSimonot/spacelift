@@ -25,7 +25,6 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {}
 
-# 1.1 VPC principal
 resource "aws_vpc" "main" {
   cidr_block           = var.VPC_CIDR
   enable_dns_support   = true
@@ -36,7 +35,6 @@ resource "aws_vpc" "main" {
   }
 }
 
-# 1.2 Sous-réseau privé (pour héberger les 2 EC2)
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.PRIVATE_SUBNET_CIDR
@@ -44,6 +42,22 @@ resource "aws_subnet" "private" {
 
   tags = {
     Name = "subnet-private-webservers"
+  }
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "private-route-table"
+  }
+}
+
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "main-internet-gateway"
   }
 }
 
@@ -60,13 +74,11 @@ resource "aws_key_pair" "deploy_key" {
 # 3. Security Group (pour les 2 serveurs Web)
 #############################################
 
-# Nom ne commençant pas par "sg-"
 resource "aws_security_group" "webservers_sg" {
   name        = "webservers-sg"
   description = "HTTP entre webservers + SSH depuis Bastion Azure"
   vpc_id      = aws_vpc.main.id
 
-  # HTTP (80) depuis le même SG (communication interne)
   ingress {
     from_port   = 80
     to_port     = 80
@@ -75,7 +87,6 @@ resource "aws_security_group" "webservers_sg" {
     description = "HTTP interne entre webservers"
   }
 
-  # SSH (22) depuis Bastion Azure (CIDR Azure)
   ingress {
     from_port   = 22
     to_port     = 22
@@ -84,7 +95,6 @@ resource "aws_security_group" "webservers_sg" {
     description = "SSH depuis Bastion Azure"
   }
 
-  # Tout trafic sortant autorisé
   egress {
     from_port   = 0
     to_port     = 0
@@ -101,7 +111,6 @@ resource "aws_security_group" "webservers_sg" {
 # 4. Instances EC2 (deux serveurs web dans le subnet)
 ###################################################
 
-# 4.1 EC2 #1
 resource "aws_instance" "web1" {
   ami                         = "ami-0779caf41f9ba54f0"
   instance_type               = "t2.micro"
@@ -115,7 +124,6 @@ resource "aws_instance" "web1" {
   }
 }
 
-# 4.2 EC2 #2
 resource "aws_instance" "web2" {
   ami                         = "ami-0779caf41f9ba54f0"
   instance_type               = "t2.micro"
@@ -129,41 +137,51 @@ resource "aws_instance" "web2" {
   }
 }
 
-###################
-# 5. Outputs clés
-###################
+########################################
+# 5. VPN Site-to-Site AWS vers Azure
+########################################
 
-# VPC et Subnet
-output "vpc_id" {
-  description = "ID du VPC créé"
-  value       = aws_vpc.main.id
-}
-output "private_subnet_id" {
-  description = "ID du subnet privé hébergeant les webservers"
-  value       = aws_subnet.private.id
-}
-
-# Security Group
-output "webservers_sg_id" {
-  description = "ID du Security Group des webservers"
-  value       = aws_security_group.webservers_sg.id
+resource "aws_customer_gateway" "cgw" {
+  bgp_asn    = 65000
+  ip_address = var.azure_vpn_public_ip
+  type       = "ipsec.1"
+  tags = {
+    Name = "CustomerGatewayToAzure"
+  }
 }
 
-# Instances EC2
-output "web1_instance_id" {
-  description = "ID de la première instance web"
-  value       = aws_instance.web1.id
-}
-output "web1_private_ip" {
-  description = "IP privée de la première instance web"
-  value       = aws_instance.web1.private_ip
+resource "aws_vpn_gateway" "vgw" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "VPNGateway"
+  }
 }
 
-output "web2_instance_id" {
-  description = "ID de la seconde instance web"
-  value       = aws_instance.web2.id
+resource "aws_vpn_connection" "vpn" {
+  customer_gateway_id = aws_customer_gateway.cgw.id
+  type                = "ipsec.1"
+  vpn_gateway_id      = aws_vpn_gateway.vgw.id
+  static_routes_only  = true
+  tags = {
+    Name = "AWS-Azure-VPN"
+  }
 }
-output "web2_private_ip" {
-  description = "IP privée de la seconde instance web"
-  value       = aws_instance.web2.private_ip
+
+resource "aws_vpn_connection_route" "to_azure" {
+  vpn_connection_id       = aws_vpn_connection.vpn.id
+  destination_cidr_block  = var.azure_subnet_cidr
+}
+
+resource "aws_route" "to_azure_vpn" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = var.azure_subnet_cidr
+  vpn_gateway_id         = aws_vpn_gateway.vgw.id
+}
+
+resource "aws_eip" "vpn" {
+  instance = null
+  vpc      = true
+  tags = {
+    Name = "VPN EIP (if needed)"
+  }
 }
