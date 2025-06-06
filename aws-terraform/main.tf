@@ -61,6 +61,13 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
+# Attacher l'IGW à la route table publique (si tu as une route publique)
+resource "aws_route" "public_internet" {
+  route_table_id         = aws_route_table.private.id
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = aws_internet_gateway.gw.id
+}
+
 ###########################################
 # 2. Key Pair SSH (import du contenu textuel)
 ###########################################
@@ -76,9 +83,10 @@ resource "aws_key_pair" "deploy_key" {
 
 resource "aws_security_group" "webservers_sg" {
   name        = "webservers-sg"
-  description = "HTTP entre webservers + SSH depuis Bastion Azure"
+  description = "HTTP entre webservers + SSH depuis un bastion éventuel"
   vpc_id      = aws_vpc.main.id
 
+  # HTTP (80) entre webservers eux-mêmes (communication interne)
   ingress {
     from_port   = 80
     to_port     = 80
@@ -87,14 +95,17 @@ resource "aws_security_group" "webservers_sg" {
     description = "HTTP interne entre webservers"
   }
 
+  # SSH (22) : pour l'instant on autorise tout (0.0.0.0/0),
+  # mais tu pourras restreindre plus tard (bastion Azure, VPN, etc.)
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.AZURE_VPN_PREFIX]
-    description = "SSH depuis Bastion Azure"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "SSH depuis l'extérieur ou bastion (à restreindre plus tard)"
   }
 
+  # Tout trafic sortant autorisé
   egress {
     from_port   = 0
     to_port     = 0
@@ -112,7 +123,7 @@ resource "aws_security_group" "webservers_sg" {
 ###################################################
 
 resource "aws_instance" "web1" {
-  ami                         = "ami-0779caf41f9ba54f0"
+  ami                         = "ami-0779caf41f9ba54f0" # par exemple Amazon Linux 2
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.private.id
   vpc_security_group_ids      = [aws_security_group.webservers_sg.id]
@@ -134,54 +145,5 @@ resource "aws_instance" "web2" {
 
   tags = {
     Name = "ec2-webserver-2"
-  }
-}
-
-########################################
-# 5. VPN Site-to-Site AWS vers Azure
-########################################
-
-resource "aws_customer_gateway" "cgw" {
-  bgp_asn    = 65000
-  ip_address = var.azure_vpn_public_ip
-  type       = "ipsec.1"
-  tags = {
-    Name = "CustomerGatewayToAzure"
-  }
-}
-
-resource "aws_vpn_gateway" "vgw" {
-  vpc_id = aws_vpc.main.id
-  tags = {
-    Name = "VPNGateway"
-  }
-}
-
-resource "aws_vpn_connection" "vpn" {
-  customer_gateway_id = aws_customer_gateway.cgw.id
-  type                = "ipsec.1"
-  vpn_gateway_id      = aws_vpn_gateway.vgw.id
-  static_routes_only  = true
-  tags = {
-    Name = "AWS-Azure-VPN"
-  }
-}
-
-resource "aws_vpn_connection_route" "to_azure" {
-  vpn_connection_id       = aws_vpn_connection.vpn.id
-  destination_cidr_block  = var.azure_subnet_cidr
-}
-
-resource "aws_route" "to_azure_vpn" {
-  route_table_id         = aws_route_table.private.id
-  destination_cidr_block = var.azure_subnet_cidr
-  vpn_gateway_id         = aws_vpn_gateway.vgw.id
-}
-
-resource "aws_eip" "vpn" {
-  instance = null
-  vpc      = true
-  tags = {
-    Name = "VPN EIP (if needed)"
   }
 }

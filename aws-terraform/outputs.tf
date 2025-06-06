@@ -1,78 +1,54 @@
 output "aws_vpc_id" {
-  value = aws_vpc.main.id
+  description = "ID du VPC créé"
+  value       = aws_vpc.main.id
 }
 
 output "aws_private_subnet_id" {
-  value = aws_subnet.private.id
+  description = "ID du subnet privé hébergeant les webservers"
+  value       = aws_subnet.private.id
 }
 
 output "aws_igw_id" {
-  value = aws_internet_gateway.gw.id
+  description = "ID de l'Internet Gateway"
+  value       = aws_internet_gateway.gw.id
 }
 
 output "aws_route_table_private_id" {
-  value = aws_route_table.private.id
-}
-
-output "web1_instance_id" {
-  value = aws_instance.web1.id
-}
-
-output "web1_private_ip" {
-  value = aws_instance.web1.private_ip
-}
-
-output "web1_key_name" {
-  value = aws_instance.web1.key_name
-}
-
-output "web2_instance_id" {
-  value = aws_instance.web2.id
-}
-
-output "web2_private_ip" {
-  value = aws_instance.web2.private_ip
-}
-
-output "web2_key_name" {
-  value = aws_instance.web2.key_name
+  description = "ID de la route table privée"
+  value       = aws_route_table.private.id
 }
 
 output "webservers_sg_id" {
-  value = aws_security_group.webservers_sg.id
+  description = "ID du Security Group des webservers"
+  value       = aws_security_group.webservers_sg.id
 }
 
-# VPN-specific outputs
-output "aws_customer_gateway_id" {
-  value = aws_customer_gateway.cgw.id
+output "web1_instance_id" {
+  description = "ID de la première instance web"
+  value       = aws_instance.web1.id
 }
 
-output "aws_vpn_gateway_id" {
-  value = aws_vpn_gateway.vgw.id
+output "web1_private_ip" {
+  description = "IP privée de la première instance web"
+  value       = aws_instance.web1.private_ip
 }
 
-output "aws_vpn_connection_id" {
-  value = aws_vpn_connection.vpn.id
+output "web1_key_name" {
+  description = "Nom de la key pair pour web1"
+  value       = aws_instance.web1.key_name
 }
 
-output "aws_vpn_tunnel1_outside_address" {
-  value = aws_vpn_connection.vpn.tunnel1_address
+output "web2_instance_id" {
+  description = "ID de la seconde instance web"
+  value       = aws_instance.web2.id
 }
 
-output "aws_vpn_tunnel2_outside_address" {
-  value = aws_vpn_connection.vpn.tunnel2_address
+output "web2_private_ip" {
+  description = "IP privée de la seconde instance web"
+  value       = aws_instance.web2.private_ip
 }
 
-output "aws_vpn_tunnel1_psk" {
-  value     = aws_vpn_connection.vpn.tunnel1_preshared_key
-  sensitive = true
-}
-
-output "aws_vpn_tunnel2_psk" {
-  value     = aws_vpn_connection.vpn.tunnel2_preshared_key
-  sensitive = true
-}
-
-output "aws_vpn_eip" {
-  value = aws_eip.vpn.public_ip
+output "web2_key_name" {
+  description = "Nom de la key pair pour web2"
+  value       = aws_instance.web2.key_name
 }

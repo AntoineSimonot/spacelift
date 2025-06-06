@@ -1,6 +1,6 @@
 variable "AWS_REGION" {
   type        = string
-  description = "Région AWS (ex: eu-west-1)"
+  description = "Région AWS (ex: eu-west-3)"
 }
 
 variable "AWS_ACCESS_KEY_ID" {
@@ -15,7 +15,7 @@ variable "AWS_SECRET_ACCESS_KEY" {
 
 variable "AWS_SESSION_TOKEN" {
   type        = string
-  description = "Token temporaire AWS (si applicable)"
+  description = "Token AWS temporaire (si applicable)"
   default     = null
 }
 
@@ -34,17 +34,4 @@ variable "SSH_PUBLIC_KEY" {
   description = "Clé publique SSH utilisée pour se connecter aux EC2"
 }
 
-variable "AZURE_VPN_PREFIX" {
-  type        = string
-  description = "CIDR Azure autorisé à se connecter (ex: 10.1.0.0/16)"
-}
-
-variable "azure_vpn_public_ip" {
-  type        = string
-  description = "Adresse IP publique de la gateway VPN Azure"
-}
-
-variable "azure_subnet_cidr" {
-  type        = string
-  description = "CIDR du réseau Azure à atteindre via le VPN"
-}
+# (On laisse de côté toute variable Azure/Azure VPN pour l'instant)
