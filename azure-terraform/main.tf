@@ -1,7 +1,3 @@
-// ────────────────────────────────────────────────────────────────────────────
-// main.tf
-// ────────────────────────────────────────────────────────────────────────────
-
 terraform {
   required_version = ">= 1.0"
   required_providers {
@@ -24,7 +20,9 @@ provider "azurerm" {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region     = var.aws_region
+  access_key = var.AWS_ACCESS_KEY_ID
+  secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
 # -------------------------
@@ -165,8 +163,3 @@ resource "azurerm_linux_virtual_machine" "vm" {
     Name = "azure-vm"
   }
 }
-
-# -------------------------
-# Output IP publique Azure
-# -------------------------
-# (Les outputs sont déclarés dans outputs.tf)
