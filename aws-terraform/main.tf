@@ -9,7 +9,7 @@ terraform {
       version = "~> 4.0"
     }
   }
-  # Aucun bloc `backend` ici ; la gestion de l’état (S3 / autre) se fera exclusivement via Spacelift.
+  # Aucun bloc backend ici : Spacelift gère l’état (S3) à l’extérieur du code.
 }
 
 provider "aws" {
@@ -36,7 +36,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# 1.2 Sous-réseau privé (uniquement) pour héberger les 2 EC2
+# 1.2 Sous-réseau privé (pour héberger les 2 EC2)
 resource "aws_subnet" "private" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.PRIVATE_SUBNET_CIDR
@@ -60,11 +60,9 @@ resource "aws_key_pair" "deploy_key" {
 # 3. Security Group (pour les 2 serveurs Web)
 #############################################
 
-# SG unique :
-# - autorise HTTP (80) _entre_ les deux instances (self-referential)  
-# - autorise SSH (22) _uniquement_ depuis le Bastion Azure (CIDR = var.AZURE_VPN_PREFIX)
-resource "aws_security_group" "sg_webservers" {
-  name        = "sg-webservers"
+# Ne commence pas par "sg-"
+resource "aws_security_group" "webservers_sg" {
+  name        = "webservers-sg"
   description = "HTTP entre webservers + SSH depuis Bastion Azure"
   vpc_id      = aws_vpc.main.id
 
@@ -86,7 +84,7 @@ resource "aws_security_group" "sg_webservers" {
     description = "SSH depuis Bastion Azure"
   }
 
-  # Tout sortie autorisé (par simplification)
+  # Tout trafic sortant autorisé
   egress {
     from_port   = 0
     to_port     = 0
@@ -95,7 +93,7 @@ resource "aws_security_group" "sg_webservers" {
   }
 
   tags = {
-    Name = "sg-webservers"
+    Name = "webservers-sg"
   }
 }
 
@@ -105,11 +103,11 @@ resource "aws_security_group" "sg_webservers" {
 
 # 4.1. EC2 #1
 resource "aws_instance" "web1" {
-  ami                    = "ami-0779caf41f9ba54f0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private.id
-  vpc_security_group_ids = [aws_security_group.sg_webservers.id]
-  key_name               = aws_key_pair.deploy_key.key_name
+  ami                         = "ami-0779caf41f9ba54f0"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.private.id
+  vpc_security_group_ids      = [aws_security_group.webservers_sg.id]
+  key_name                    = aws_key_pair.deploy_key.key_name
   associate_public_ip_address = false
 
   tags = {
@@ -119,11 +117,11 @@ resource "aws_instance" "web1" {
 
 # 4.2. EC2 #2
 resource "aws_instance" "web2" {
-  ami                    = "ami-0779caf41f9ba54f0"
-  instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.private.id
-  vpc_security_group_ids = [aws_security_group.sg_webservers.id]
-  key_name               = aws_key_pair.deploy_key.key_name
+  ami                         = "ami-0779caf41f9ba54f0"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.private.id
+  vpc_security_group_ids      = [aws_security_group.webservers_sg.id]
+  key_name                    = aws_key_pair.deploy_key.key_name
   associate_public_ip_address = false
 
   tags = {
@@ -146,9 +144,9 @@ output "private_subnet_id" {
 }
 
 # Security Group
-output "sg_webservers_id" {
+output "webservers_sg_id" {
   description = "ID du Security Group des webservers"
-  value       = aws_security_group.sg_webservers.id
+  value       = aws_security_group.webservers_sg.id
 }
 
 # Instances EC2
