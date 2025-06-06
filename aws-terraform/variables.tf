@@ -43,4 +43,32 @@ variable "PRIVATE_SUBNET_CIDR" {
 # 3. Clé publique SSH (contenu textuel, non chemin de fichier)
 variable "SSH_PUBLIC_KEY" {
   description = "Contenu de la clé publique SSH (ex. contenu de ~/.ssh/id_deployment.pub)"
-  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDHOwRj/RMQIXAVjZptf8bboC5ZcCj7TmWNyrpT4egcCeC2TD30qZJFao57LAYI6wTIQJiFWRMp1PAqVQY/2jUzw29Nn8uUgTVg63NTH8nKgK2UvifyrNb1bwwP/77VAisps8b/fUjsdl1Vd77Q0Zxyi2bUm5dEcMBuWqnZxXTq00qyAXsx1Bfei/8Y+X2knfrRdbuhJdVzFqz/sAUhjGAIN/IRVHDVoMz4PgQZgGuxXdKbzgHN2xz5bm3oM0epsw3D7aV8Fyf8IVtKCbpd2QphGSLNhLOjJza8tm4afxJw/r1fK6w3xCGdWapcWoTxSL4RPfn/Xar0faEH7mZPUwgYs3RyS
+  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDHOwRj/RMQIXAVjZptf8bboC5ZcCj7TmWNyrpT4egcCeC2TD30qZJFao57LAYI6wTIQJiFWRMp1PAqVQY/2jUzw29Nn8uUgTVg63NTH8nKgK2UvifyrNb1bwwP/77VAisps8b/fUjsdl1Vd77Q0Zxyi2bUm5dEcMBuWqnZxXTq00qyAXsx1Bfei/8Y+X2knfrRdbuhJdVzFqz/sAUhjGAIN/IRVHDVoMz4PgQZgGuxXdKbzgHN2xz5bm3oM0epsw3D7aV8Fyf8IVtKCbpd2QphGSLNhLOjJza8tm4afxJw/r1fK6w3xCGdWapcWoTxSL4RPfn/Xar0faEH7mZPUwgYs3RySldTdsoU13M/wCuSrrusMtlhAj0xO+AuGN63cXzXYr7RN/O8or0wSea/usXsMU7ndXrHaUiDR/0hVvl4RBS6mj3HZTok4SjHFOH9OXB10zrbnPPKiS/phdPmMVslZyDUciETVadLV1gsJAEccAzSHbCVjDIl5W0HJKIvFtJiHh2zP/rCN4qvsxw/5JsJ4xUR8LBCBurBaMtt5UWoqPXu1B+TfIoc1YIwije0wf5VUF+H6AfWazTK4lFLweoySkWtk/FvaFaGEaHgbOqSl/PTaRUMDxIHsFaqESDOImeg5CFm8TTNrq+KQSKlqhbE3LFYtCkU74qAzG7Q4PUCEQ== antoine@DESKTOP-32GVOH3"
+  sensitive   = true
+}
+
+# 4. CIDR du Bastion Azure (pour autoriser SSH Bastion→AWS)
+variable "AZURE_VPN_PREFIX" {
+  description = "CIDR de la VNet Azure (ex. 10.1.0.0/16)"
+  default     = "10.1.0.0/16"
+}
+
+############################################
+# Variables pour la partie VPN AWS
+############################################
+
+variable "azure_public_ip" {
+  description = "IP publique de la VPN Gateway Azure (Local Network Gateway)"
+  default     = "172.190.144.32"    # ← mise à jour avec votre azure_ip actuel
+}
+
+variable "azure_cidr" {
+  description = "CIDR du réseau Azure à joindre (ex. 10.1.0.0/16)"
+  default     = "10.1.0.0/16"
+}
+
+variable "psk_override" {
+  description = "Optionnel : forcer un PSK statique (laisse vide pour en générer un automatiquement)"
+  type        = string
+  default     = ""
+}
