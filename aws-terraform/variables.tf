@@ -10,12 +10,12 @@ variable "AWS_REGION" {
 
 variable "AWS_ACCESS_KEY_ID" {
   description = "AWS Access Key ID"
-  default     = "ASIAV55UWRTZ3DAN3YN"
+  default     = "ASIAV55UVWRTR5GQVZMT"
 }
 
 variable "AWS_SECRET_ACCESS_KEY" {
   description = "AWS Secret Access Key"
-  default     = "bDBMXRsf3/w6pkm/VEVNkFbggbfeU1ruzeghlDtk"
+  default     = "gEOHXMj4av3CRcx4RI3NSQl1rORqP7EOsNOzkrGC"
   sensitive   = true
 }
 
