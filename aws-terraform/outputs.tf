@@ -39,7 +39,7 @@ output "web2_key_name" {
 }
 
 output "webservers_sg_id" {
-  value = aws_security_group.webservers.id
+  value = aws_security_group.webservers_sg.id
 }
 
 # VPN-specific outputs
@@ -64,16 +64,15 @@ output "aws_vpn_tunnel2_outside_address" {
 }
 
 output "aws_vpn_tunnel1_psk" {
-  value = aws_vpn_connection.vpn.tunnel1_preshared_key
+  value     = aws_vpn_connection.vpn.tunnel1_preshared_key
   sensitive = true
 }
 
 output "aws_vpn_tunnel2_psk" {
-  value = aws_vpn_connection.vpn.tunnel2_preshared_key
+  value     = aws_vpn_connection.vpn.tunnel2_preshared_key
   sensitive = true
 }
 
-# Optionnel : Elastic IP (si VPN via EC2 par exemple)
 output "aws_vpn_eip" {
   value = aws_eip.vpn.public_ip
 }
