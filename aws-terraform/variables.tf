@@ -36,13 +36,14 @@ variable "PRIVATE_SUBNET_CIDR" {
   default     = "10.0.1.0/24"
 }
 
-# 3. Chemin vers la clé publique SSH (pour AWS Key Pair)
-variable "SSH_PUBLIC_KEY_PATH" {
-  description = "Chemin local vers la clé publique SSH"
-  default     = "~/.ssh/id_deployment.pub"
+# 3. Clé publique SSH (contenu textuel, non chemin de fichier)
+variable "SSH_PUBLIC_KEY" {
+  description = "Contenu de la clé publique SSH (ex. contenu de ~/.ssh/id_deployment.pub)"
+  default     = ""   # Laissez vide dans le code ; vous collerez la vraie clé dans Spacelift
+  sensitive   = true
 }
 
-# 4. CIDR du Bastion Azure (pour autoriser SSH depuis Bastion vers AWS)
+# 4. CIDR du Bastion Azure (pour autoriser SSH Bastion→AWS)
 variable "AZURE_VPN_PREFIX" {
   description = "CIDR de la VNet Azure (ex. 10.1.0.0/16)"
   default     = "10.1.0.0/16"

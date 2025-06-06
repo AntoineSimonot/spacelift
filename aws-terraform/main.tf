@@ -9,7 +9,7 @@ terraform {
       version = "~> 4.0"
     }
   }
-  # Aucun bloc backend ici : Spacelift gère l’état (S3) à l’extérieur du code.
+  # Aucun bloc backend ici : Spacelift gère l’état (S3) à l’extérieur du code
 }
 
 provider "aws" {
@@ -48,34 +48,34 @@ resource "aws_subnet" "private" {
 }
 
 ###########################################
-# 2. Key Pair SSH (import de la clé publique)
+# 2. Key Pair SSH (import du contenu textuel)
 ###########################################
 
 resource "aws_key_pair" "deploy_key" {
   key_name   = "key-deployment"
-  public_key = file(var.SSH_PUBLIC_KEY_PATH)
+  public_key = var.SSH_PUBLIC_KEY
 }
 
 #############################################
 # 3. Security Group (pour les 2 serveurs Web)
 #############################################
 
-# Ne commence pas par "sg-"
+# Nom ne commençant pas par "sg-"
 resource "aws_security_group" "webservers_sg" {
   name        = "webservers-sg"
   description = "HTTP entre webservers + SSH depuis Bastion Azure"
   vpc_id      = aws_vpc.main.id
 
-  # HTTP (80) depuis le même SG (permet aux 2 serveurs de communiquer sur 80)
+  # HTTP (80) depuis le même SG (communication interne)
   ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    self            = true
-    description     = "HTTP interne entre webservers"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    self        = true
+    description = "HTTP interne entre webservers"
   }
 
-  # SSH (22) depuis Bastion Azure
+  # SSH (22) depuis Bastion Azure (CIDR Azure)
   ingress {
     from_port   = 22
     to_port     = 22
@@ -101,7 +101,7 @@ resource "aws_security_group" "webservers_sg" {
 # 4. Instances EC2 (deux serveurs web dans le subnet)
 ###################################################
 
-# 4.1. EC2 #1
+# 4.1 EC2 #1
 resource "aws_instance" "web1" {
   ami                         = "ami-0779caf41f9ba54f0"
   instance_type               = "t2.micro"
@@ -115,7 +115,7 @@ resource "aws_instance" "web1" {
   }
 }
 
-# 4.2. EC2 #2
+# 4.2 EC2 #2
 resource "aws_instance" "web2" {
   ami                         = "ami-0779caf41f9ba54f0"
   instance_type               = "t2.micro"
