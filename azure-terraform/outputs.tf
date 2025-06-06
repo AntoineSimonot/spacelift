@@ -1,7 +1,3 @@
-// ────────────────────────────────────────────────────────────────────────────
-// outputs.tf
-// ────────────────────────────────────────────────────────────────────────────
-
 output "azure_ip" {
   description = "Adresse IP publique de la VM Azure"
   value       = azurerm_public_ip.public_ip.ip_address
