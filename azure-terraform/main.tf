@@ -8,10 +8,6 @@ terraform {
     tls = {
       source = "hashicorp/tls"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = ">= 3.0"
-    }
   }
 }
 
@@ -19,28 +15,16 @@ provider "azurerm" {
   features {}
 }
 
-provider "aws" {
-  region = var.aws_region
-  # Pas de access_key/secret_key ici : Terraform récupérera
-  # les credentials depuis l'environnement ou le rôle IAM Spacelift
-}
-
 # -------------------------
-# Clé SSH pour Azure
+# Clé SSH pour la VM Azure
 # -------------------------
 resource "tls_private_key" "azure_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "aws_ssm_parameter" "azure_private_key" {
-  name  = "/ssh/azure-vm/private"
-  type  = "SecureString"
-  value = tls_private_key.azure_key.private_key_pem
-}
-
 # -------------------------
-# Groupe de ressources Azure
+# Groupe de ressources
 # -------------------------
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
@@ -48,7 +32,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 # -------------------------
-# Réseau Azure
+# Réseau virtuel et subnet
 # -------------------------
 resource "azurerm_virtual_network" "vnet" {
   name                = "demo-vnet"
@@ -65,7 +49,7 @@ resource "azurerm_subnet" "subnet" {
 }
 
 # -------------------------
-# IP publique + NIC Azure
+# IP publique + NIC
 # -------------------------
 resource "azurerm_public_ip" "public_ip" {
   name                = "demo-public-ip"
@@ -93,7 +77,7 @@ resource "azurerm_network_interface" "nic" {
 }
 
 # -------------------------
-# Sécurité Azure (NSG)
+# Network Security Group
 # -------------------------
 resource "azurerm_network_security_group" "nsg" {
   name                = "demo-nsg"
@@ -131,7 +115,7 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
 }
 
 # -------------------------
-# VM Ubuntu Azure
+# Machine virtuelle Linux
 # -------------------------
 resource "azurerm_linux_virtual_machine" "vm" {
   name                = "azurevm"
